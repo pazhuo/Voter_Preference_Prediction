@@ -1,0 +1,30 @@
+/*run the base line model*/
+proc logistic data=train;
+   class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M') race;
+   model y(event='1')= cd party age gender race four; 
+run;
+
+/*delete race and build the new model */
+proc logistic data=train;
+   class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M');
+   model y(event='1')= cd party age age*gender four/ ctable pprob=0.21; 
+   score data = new out=work.scored1;
+run;
+
+
+/*best model*/
+%global screened;
+%let screened=CD party age;
+ods pdf file="C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/finalmodel.pdf";
+title1 "Logistic Regression Model for Mcsally";
+proc logistic data=work.train
+   plots(only maxpoints=none)=(effect(clband x=(four))
+              oddsratio (type=horizontalstat));
+   class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M') ;
+   model y(event='1')= &screened age*gender four / stb clodds=pl; 
+   oddsratio age/ diff=all cl=pl;
+   effectplot slicefit(sliceby=age x=four) / noobs;
+   effectplot slicefit(sliceby=party x=four) / noobs;   
+run;
+title1;
+ods pdf close;

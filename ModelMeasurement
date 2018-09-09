@@ -1,0 +1,75 @@
+/*model measurement*/
+ods select roccurve scorefitstat;
+proc logistic data=train;
+   class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M') ;
+   model y(event='1')= cd party age age*gender four/ ctable pprob=0.55;
+   score data=valid out=work.scoval 
+         outroc=work.roc fitstat;
+run;
+
+title1 "Statistics in the ROC Data Set";
+proc print data=work.roc(obs=10);
+   var _prob_ _sensit_ _1mspec_;
+run;
+
+data work.roc;
+   set work.roc;
+   cutoff=_PROB_;
+   specif=1-_1MSPEC_;
+   tp=&pi1*_SENSIT_;
+   fn=&pi1*(1-_SENSIT_);
+   tn=(1-&pi1)*specif;
+   fp=(1-&pi1)*_1MSPEC_;
+   depth=tp+fp;
+   pospv=tp/depth;
+   negpv=tn/(1-depth);
+   acc=tp+tn;
+   lift=pospv/&pi1;
+   keep cutoff tn fp fn tp 
+        _SENSIT_ _1MSPEC_ specif depth
+        pospv negpv acc lift;
+run;
+
+proc print data=work.roc;
+run;
+
+/* Create a lift chart */
+title1 "Lift Chart for Validation Data";
+proc sgplot data=work.roc;
+   where 0.005 <= depth <= 0.50;
+   series y=lift x=depth;
+   refline 1.0 / axis=y;
+   yaxis values=(0 to 9 by 1);
+run; quit;
+title1 ;
+
+
+/*select optimal cutoff probability*/
+proc logistic data =train;
+	class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M');
+   model y(event='1')= cd party age age*gender four / outroc=rocstats;
+run;
+
+data check;
+set rocstats;
+_SPECIF_ = (1 - _1MSPEC_);
+J = _SENSIT_ + _SPECIF_ - 1;
+D= Sqrt((1-_SENSIT_)**2 + (1-_SPECIF_)**2);
+run;
+
+proc sql;
+create table cutoff as
+select _PROB_ , J
+from check
+having J = max(J);
+quit;
+
+proc print data=cutoff1;
+run;
+
+proc sql noprint;
+create table cutoff1 as
+select _PROB_ , D
+from check
+having D = min(D);
+quit;

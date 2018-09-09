@@ -1,0 +1,39 @@
+proc sort data=cleaned_data out=work.develop_sort; 
+   by y; 
+run;
+
+proc surveyselect noprint data=develop_sort 
+                  samprate=.6667
+                  out=target_sample
+                  seed=44444 outall;
+strata y;
+run;
+
+/*drop unnessasary variables*/
+data work.train(drop=selected SelectionProb SamplingWeight) 
+     work.valid(drop=selected SelectionProb SamplingWeight);
+   set target_sample;
+   if selected then output work.train;
+   else output work.valid;
+run;
+
+PROC freq data=train;
+table y;
+run;
+
+/*export train and valide data */
+proc export data=train outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/train.xlsx' dbms = xlsx replace;
+run;
+PROC IMPORT OUT=train DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/train.xlsx" 
+            DBMS=xlsx REPLACE;
+     GETNAMES=YES; /*use the first row as variable name*/
+RUN; 
+proc freq data=train;
+table y;
+run;
+
+proc contents data=train;
+run;
+
+proc contents data=valid;
+run; 

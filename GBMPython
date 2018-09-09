@@ -1,0 +1,288 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jun 21 11:30:08 2018
+@author: zoey
+"""
+#https://www.datacareer.ch/blog/parameter-tuning-in-gradient-boosting-gbm-with-python/
+import pandas as pd
+
+#read data
+state = pd.DataFrame.from_csv("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/statewide.csv")
+state.head().to_excel("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx")
+
+#check the column name
+headers = state.dtypes.index
+print(headers)
+
+#delete unnessasary columns
+state=state.drop(state.columns[[0,1,2,3,4,7,8,9,10,18,20,21]], axis=1)
+state.head()
+state.head().to_excel("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx"
+          , sheet_name='2')
+
+#change column name
+state.columns = ['precinct', 'four_primay','party','arpaio','mcsally','undecided','ward','gender','age','race','UID']
+
+#set UID as the index
+state.set_index('UID')
+
+
+#frequency table
+Arpaio = pd.crosstab(index=state['arpaio'],columns="count")      # Name the count column
+print(Arpaio)
+Mcsally = pd.crosstab(index=state['mcsally'],columns="count")      # Name the count column
+print(Mcsally)
+Undecided = pd.crosstab(index=state['undecided'],columns="count")      # Name the count column
+print(Undecided)
+Ward = pd.crosstab(index=state['ward'],columns="count")      # Name the count column
+print(Ward)
+
+
+#creat new column by add other columns
+state.apply(lambda row: row.arpaio + row.mcsally +row.undecided + row.ward, axis=1)
+state['total'] = state.apply(lambda row: row.arpaio + row.mcsally +row.undecided + row.ward, axis=1)
+state.head()
+
+state.to_csv("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/newstate.csv")
+
+#remove all 0
+state=state[state.summ != 0]
+
+#-----------------------------------------------
+#read excel into python
+df = pd.read_csv('C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/cleanstate.csv')
+df.head()
+
+#define x and y
+x = df.iloc[:,0:5]
+y = df.iloc[:,6]
+headers = df.dtypes.index
+print(headers)
+
+#change data type
+df["Precinct"] = df["Precinct"].astype('category')
+df.dtypes
+df["Precinct_new"] = df["Precinct"].cat.codes
+df.head()
+
+df["Party"] = df["Party"].astype('category')
+df.dtypes
+df["Party_new"] = df["Party"].cat.codes
+df.head()
+
+df["Gender"] = df["Gender"].astype('category')
+df.dtypes
+df["Gender_new"] = df["Gender"].cat.codes
+df.head()
+
+df["Age_Range"] = df["Age_Range"].astype('category')
+df.dtypes
+df["Age_new"] = df["Age_Range"].cat.codes
+df.head()
+
+df["Coalesce_Race"] = df["Coalesce_Race"].astype('category')
+df.dtypes
+df["Coalesce_Race_new"] = df["Party"].cat.codes
+df.head()
+#define x and y
+x_train, x_test, y_train, y_test = train_test_split( x, y, test_size = 0.3)
+print(x_train)
+
+df.to_csv("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/finalnew.csv")
+
+
+#-----------------------------------------------
+#Import libraries:
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import GradientBoostingClassifier  #GBM algorithm
+from sklearn import cross_validation, metrics   #Additional scklearn functions
+from sklearn.grid_search import GridSearchCV   #Perforing grid search
+import matplotlib.pylab as plt
+from matplotlib.pylab import rcParams
+rcParams['figure.figsize'] = 12, 4
+from sklearn.cross_validation import train_test_split
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import itertools
+import graphviz
+import xgboost
+
+
+# plot decision tree
+from numpy import loadtxt
+from xgboost import XGBClassifier
+from xgboost import plot_tree
+import matplotlib.pyplot as plt
+
+seed = 100
+#read csv into python, excel to replace csv
+df = pd.read_csv('C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/new.csv')
+df.head()
+rows = len(df)
+print(rows)
+df.dtypes
+
+
+#XGB Model
+model = XGBClassifier()
+model.fit(x_train, y_train)
+# plot single tree
+plot_tree(model)
+plt.show()
+
+xgboost.plot_importance(model)
+pl.title("xgboost.plot_importance(model)")
+pl.show()
+
+shap_values = shap.TreeExplainer(model).shap_values(x_train)
+shap.force_plot(shap_values[0,:], x_train.iloc[0,:])
+
+
+#change data type
+df["Age"] = df["Age"].astype('category')
+df["Precinct"] = df["Precinct"].astype('category')
+df["Party"] = df["Party"].astype('category')
+df["Gender"] = df["Gender"].astype('category')
+df["Race"] = df["Race"].astype('category')
+df["y"] = df["y"].astype('category')
+df.dtypes
+df["y_new"] = df["y"].cat.codes
+df["y_new"] = df["y_new"].astype('category')
+df.dtypes
+
+#set x and y
+x = df.iloc[:,0:5]
+y = df.iloc[:,6]
+x_train, x_test, y_train, y_test = train_test_split( x, y, test_size = 0.3)
+print(x_train)
+x_train.head()
+y_train.head()
+
+#baseline model without tune
+baseline = GradientBoostingClassifier(learning_rate=0.1, n_estimators=100,max_depth=3, min_samples_split=2, min_samples_leaf=1, subsample=1,max_features='sqrt', random_state=10)
+baseline.fit(x_train,y_train)
+predictors=list(x_train)
+feat_imp = pd.Series(baseline.feature_importances_, predictors).sort_values(ascending=False)
+feat_imp.plot(kind='bar', title='Importance of Features')
+plt.ylabel('Feature Importance Score')
+print('Accuracy of the GBM on test set: {:.3f}'.format(baseline.score(x_test, y_test)))
+pred=baseline.predict(x_test)
+print(classification_report(y_test, pred))
+
+#tune learning rate
+p_test3 = {'learning_rate':[0.15,0.1,0.05,0.01,0.005,0.001], 'n_estimators':[100,250,500,750,1000,1250,1500,1750]}
+
+tuning = GridSearchCV(estimator =GradientBoostingClassifier(max_depth=4, min_samples_split=2, min_samples_leaf=1, subsample=1,max_features='sqrt', random_state=10), 
+            param_grid = p_test3, scoring='accuracy',n_jobs=4,iid=False, cv=5)
+tuning.fit(x_train,y_train)
+tuning.grid_scores_, tuning.best_params_, tuning.best_score_
+
+
+#tune max_depth
+p_test2 = {'max_depth':[2,3,4,5,6,7] }
+tuning = GridSearchCV(estimator =GradientBoostingClassifier(learning_rate=0.15,n_estimators=1750, min_samples_split=2, min_samples_leaf=1, subsample=1,max_features='sqrt', random_state=10), 
+            param_grid = p_test2, scoring='accuracy',n_jobs=4,iid=False, cv=5)
+tuning.fit(x_train,y_train)
+tuning.grid_scores_, tuning.best_params_, tuning.best_score_
+
+
+#tune min_samples_split
+p_test4 = {'min_samples_split':[2,4,6,8,10,20,40,60,100], 'min_samples_leaf':[1,3,5,7,9]}
+
+tuning = GridSearchCV(estimator =GradientBoostingClassifier(learning_rate=0.15, n_estimators=1750,max_depth=7, subsample=1,max_features='sqrt', random_state=10), 
+            param_grid = p_test4, scoring='accuracy',n_jobs=4,iid=False, cv=5)
+tuning.fit(x_train,y_train)
+tuning.grid_scores_, tuning.best_params_, tuning.best_score_
+ 
+
+#tune subsample   
+p_test6= {'subsample':[0.7,0.75,0.8,0.85,0.9,0.95,1]}
+
+tuning = GridSearchCV(estimator =GradientBoostingClassifier(learning_rate=0.15, n_estimators=1750,max_depth=7, min_samples_split=6, min_samples_leaf=1,max_features='sqrt' , random_state=10), 
+param_grid = p_test6, scoring='accuracy',n_jobs=4,iid=False, cv=5)
+tuning.fit(x_train,y_train)
+tuning.grid_scores_, tuning.best_params_, tuning.best_score_
+
+
+
+#final model
+#model1 = GradientBoostingClassifier(learning_rate=0.15, n_estimators=1750,max_depth=7, min_samples_split=6, min_samples_leaf=1, subsample=1,max_features='sqrt', random_state=10)
+model1 = GradientBoostingClassifier(learning_rate=0.15, n_estimators=1750,max_depth=7, min_samples_split=4, min_samples_leaf=1, subsample=1,max_features='sqrt', random_state=10)
+model1.fit(x_train,y_train)
+predictors=list(x_train)
+feat_imp = pd.Series(model1.feature_importances_, predictors).sort_values(ascending=False)
+feat_imp.plot(kind='bar', title='Importance of Features')
+plt.ylabel('Feature Importance Score')
+print('Accuracy of the GBM on test set: {:.3f}'.format(model1.score(x_test, y_test)))
+pred=model1.predict(x_test)
+print(pred)
+print(classification_report(y_test, pred))
+pred.to_csv('C:\Users\Eli\Desktop\1.csv', sheet_name='Total Women')
+
+
+#plot confusion matrix
+
+
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+# Compute confusion matrix
+cnf_matrix = confusion_matrix(y_test, pred)
+np.set_printoptions(precision=2)
+
+# Plot non-normalized confusion matrix
+plt.figure()
+plot_confusion_matrix(cnf_matrix, classes=y_test,
+                      title='Confusion matrix, without normalization')
+
+
+#visullize the tree
+# Get the tree number 42
+sub_tree_1 = model1.estimators_[1, 0]
+from sklearn import tree
+from IPython.display import Image
+
+dot_data = tree.export_graphviz(
+    sub_tree_1,
+    out_file=None, filled=True,
+    rounded=True,  
+    special_characters=True,
+    proportion=True,
+)
+
+graph = pydotplus.graph.graph_from_dot_data(dot_data)
+Image(graph.create_png()) 

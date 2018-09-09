@@ -1,1 +1,182 @@
+/*read data*/
+PROC IMPORT OUT= target DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx" 
+            DBMS=xlsx REPLACE;
+     GETNAMES=YES; /*use the first row as variable name*/
+RUN; /*you can not read it if the excel is open*/
+
+/*combine cd*/
+proc means data=target noprint nway;
+   class Congressional_District;
+   var y;
+   output out=work.level mean=prop;
+run;
+
+title1 "Proportion of Events by Level";
+proc print data=work.level;
+run;
+
+ods output clusterhistory=work.cluster;
+proc cluster data=work.level method=ward outtree=work.fortree
+        plots=(dendrogram(vertical height=rsq));
+   freq _freq_;
+   var prop;
+   id Congressional_District;
+run;
+
+proc freq data=target noprint;
+   tables Congressional_District*y / chisq;
+   output out=work.chi(keep=_pchi_) chisq;
+run;
+
+data work.cutoff;
+   if _n_=1 then set work.chi;
+   set work.cluster;
+   chisquare=_pchi_*rsquared;
+   degfree=numberofclusters-1;
+   logpvalue=logsdf('CHISQ',chisquare,degfree);
+run;
+
+title1 "Plot of the Log of the P-Value by Number of Clusters";
+proc sgplot data=work.cutoff;
+   scatter y=logpvalue x=numberofclusters 
+           / markerattrs=(color=blue symbol=circlefilled);
+   xaxis label="Number of Clusters";
+   yaxis label="Log of P-Value" ;
+run;
+title1 ;
+
+proc sql;
+   select NumberOfClusters into :ncl
+   from work.cutoff
+   having logpvalue=min(logpvalue);
+quit;
+
+proc tree data=work.fortree nclusters=&ncl out=work.clus noprint;
+   id Congressional_District;
+run;
+
+proc sort data=work.clus;
+   by clusname;
+run;
+
+title1 "Levels of Branch by Cluster";
+proc print data=work.clus;
+   by clusname;
+   id clusname;
+run;
+title1 ;
+
+filename brclus "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/branch_clus.sas";
+data _null_;
+   file brclus;
+   set work.clus end=last;
+   if _n_=1 then put "select (Congressional_District);";
+   put "  when ('" Congressional_District +(-1) "') branch_clus = '" cluster +(-1) "';";
+   if last then do;
+      put "  otherwise branch_clus = 'U';" / "end;";
+   end;
+run;
+
+data greenacre;
+   set target;
+   %include brclus / source2;
+run;
+
+
+proc freq data=greenacre;
+table CD;
+run;
+
+data greenacre;
+set greenacre(rename=(branch_clus=CD));
+drop Congressional_District;
+run;
+
+
+/*combine age*/
+proc means data=greenacre noprint nway;
+   class age_range;
+   var y;
+   output out=work.level mean=prop;
+run;
+
+title1 "Proportion of Events by Level";
+proc print data=work.level;
+run;
+
+ods output clusterhistory=work.cluster;
+
+proc cluster data=work.level method=ward outtree=work.fortree
+        plots=(dendrogram(vertical height=rsq));
+   freq _freq_;
+   var prop;
+   id  age_range;
+run;
+
+proc freq data=greenacre noprint;
+   tables  age_range*y / chisq;
+   output out=work.chi(keep=_pchi_) chisq;
+run;
+
+data work.cutoff;
+   if _n_=1 then set work.chi;
+   set work.cluster;
+   chisquare=_pchi_*rsquared;
+   degfree=numberofclusters-1;
+   logpvalue=logsdf('CHISQ',chisquare,degfree);
+run;
+
+/* Plot the log p-values against number of clusters. */
+title1 "Plot of the Log of the P-Value by Number of Clusters";
+proc sgplot data=work.cutoff;
+   scatter y=logpvalue x=numberofclusters 
+           / markerattrs=(color=blue symbol=circlefilled);
+   xaxis label="Number of Clusters";
+   yaxis label="Log of P-Value" ;
+run;
+title1 ;
+
+/* Create a macro variable (&ncl) that contains the number of clusters
+   associated with the minimum log p-value. */
+proc sql;
+   select NumberOfClusters into :ncl
+   from work.cutoff
+   having logpvalue=min(logpvalue);
+quit;
+
+proc tree data=work.fortree nclusters=&ncl out=work.clus noprint;
+   id  age_range;
+run;
+
+proc sort data=work.clus;
+   by clusname;
+run;
+
+title1 "Levels of Branch by Cluster";
+proc print data=work.clus;
+   by clusname;
+   id clusname;
+run;
+title1 ;
+
+/* The DATA Step creates the scoring code to assign the branches to a cluster. */
+
+filename brclus "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/branch_clus.sas";
+data _null_;
+   file brclus;
+   set work.clus end=last;
+   if _n_=1 then put "select (age_range);";
+   put "  when ('" age_range +(-1) "') branch_clus = '" cluster +(-1) "';";
+   if last then do;
+      put "  otherwise branch_clus = 'U';" / "end;";
+   end;
+run;
+
+data greenacre_age;
+   set greenacre;
+   %include brclus / source2;
+run;
+
+proc print data=greenacre_age(obs=5);
+run;
 

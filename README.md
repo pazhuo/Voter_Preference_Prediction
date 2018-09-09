@@ -3,3 +3,5 @@
 
 
 - R: Multi_class classification to predict likely voter for cadidates
+
+- Python: GBM model

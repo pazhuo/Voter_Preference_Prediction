@@ -62,8 +62,3 @@ run;
 proc export data=target outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx' dbms = xlsx replace;
 run;
 
-/*read data*/
-PROC IMPORT OUT= target DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx" 
-            DBMS=xlsx REPLACE;
-     GETNAMES=YES; /*use the first row as variable name*/
-RUN; /*you can not read it if the excel is open*/

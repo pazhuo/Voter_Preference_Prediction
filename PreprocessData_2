@@ -1,0 +1,129 @@
+/*rename column*/
+data greenacre_age;
+set greenacre_age(rename=(branch_clus=age));
+drop age_range;
+run;
+
+proc freq data=greenacre_age;
+table AGE;
+run;
+
+
+/*combine party*/
+data combine_pt;
+set greenacre_age;
+if  party in ('Unaffili','Independ') then party='Independent';
+if  party in ('Green','Liberal','Libertar','Other','Reform') then party='Other';
+if  party in ('Democrat') then party='Democrat';
+if  party in ('Republic') then party='Republic';
+run;
+
+/*delete unknown gender*/
+data delete_gender;
+set combine_pt;
+if gender in ('F','M') then output;
+run;
+
+proc print data=delete_gender(obs=5);
+run;
+
+/*delete unknown or other race*/
+data delete_race;
+set delete_gender;
+if Coalesce_Race in ('Asian','Black','Hispanic','White') then output;
+run; 
+
+proc freq data=delete_race;
+table party*y;
+run;
+
+/*rename all variables*/
+data cleaned_data;
+set delete_race(rename=(Coalesce_Race =Race Last_Four_Primary_Elections=Four age=Age));
+run;
+
+proc contents data=cleaned_data;
+run;
+
+proc freq data=cleaned_data;
+table y;
+run;
+
+
+/*------------------------------------------------------------------*/
+/*code race as 1,2,3,4*/
+data code_race;
+set cleaned_data;
+if Race = "Asian" then race=1;
+if Race = "Black" then race=2;
+if Race = "Hispanic" then race=3;
+if Race = "White" then race=4;
+run;
+
+proc print data=code_race(obs=5);
+run;
+
+/*code party as 1,2,3,4*/
+data code_party;
+set code_race;
+if party = "Democrat" then party=1;
+if party = "Independ" then party=2;
+if party = "Republic" then party=3;
+if party = "Other" then party=4;
+run;
+
+proc print data=code_party(obs=5);
+run;
+
+/*code gender*/
+data code_gender;
+set code_party;
+if gender='F' then gender=1;
+if gender='M' then gender=2;
+run;
+
+proc print data=code_gender(obs=5);
+run;
+
+/*check the nonlinear relationship*/
+%global var;
+%let var=gendernew;
+
+proc rank data=code_gender groups=2 out=work.ranks;
+   var &var;
+   ranks bin;
+run;
+
+proc print data=ranks(obs=5);
+run;
+
+proc means data=work.ranks noprint nway;
+   class bin;
+   var y &var;
+   output out=work.bins sum(y)=y mean(&var)=&var;
+run;
+
+/* Calculate the empirical logit */ 
+data work.bins;
+   set work.bins;
+   elogit=log((y+(sqrt(_FREQ_ )/2))/
+          ( _FREQ_ -y+(sqrt(_FREQ_ )/2)));
+run;
+
+title1 "Empirical Logit against &var";
+proc sgplot data=work.bins;
+   reg y=elogit x=&var /
+       curvelabel="Linear Relationship?"
+      curvelabelloc=outside
+      lineattrs=(color=ligr);
+   series y=elogit x=&var;
+run;
+
+title1 "Empirical Logit against Binned &var";
+proc sgplot data=work.bins;
+   reg y=elogit x=bin /
+       curvelabel="Linear Relationship?"
+       curvelabelloc=outside
+       lineattrs=(color=ligr);
+   series y=elogit x=bin;  
+run;

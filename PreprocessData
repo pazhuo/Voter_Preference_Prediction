@@ -1,0 +1,69 @@
+/*read data*/
+PROC IMPORT OUT= WORK.state DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/OriginalData.csv" 
+            DBMS=csv REPLACE;
+     GETNAMES=YES; /*use the first row as variable name*/
+RUN; /*you can not read it if the excel is open*/
+
+/*drop unnessary columns*/
+data destate;
+set state;
+drop State_House_District Precinct _2016_Primary_Election _2014_Primary_Election 
+_2012_Primary_Election Registration_Date Political_Affinity Life _2016_General_GOTV___McCain_Supp State ContactID ActivistID;
+run;
+
+/*rename column*/
+data restate;
+set destate (rename=(AGA__2018___Arpaio_Support=arpaio AGA__2018___McSally_Support=mcsally AGA__2018___Senate__Ward_Mcsally=undecide AGA__2018___Ward_Support=ward));
+run;
+
+/*create total variable*/
+data sumstate;
+set restate;
+total=arpaio+mcsally+undecide+ward;
+run;
+
+proc print data=sumstate (obs=5);
+run;
+
+/*see the total distribution*/
+proc freq data=sumstate;
+tables total;
+run;
+
+/*delete 0,2,3 in total*/
+data cleanstate;
+set sumstate;
+if total = 1 then output cleanstate;
+run;
+
+proc print data=cleanstate (obs=5);
+run;
+
+/*combine arpaio, mcsally, ward, undecide as y， set mcsally*/
+data target;
+set cleanstate;
+drop arpaio mcsally ward undecide;
+if arpaio = 1 then y=0;
+if mcsally = 1 then y=1;
+if ward = 1 then y=0;
+if undecide = 1 then y=2;
+run;
+
+/*delete y=3 undecide*/
+data target;
+set target;
+if y in ("0","1") then output;
+run;
+
+proc contents data=target;
+run;
+
+
+proc export data=target outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx' dbms = xlsx replace;
+run;
+
+/*read data*/
+PROC IMPORT OUT= target DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx" 
+            DBMS=xlsx REPLACE;
+     GETNAMES=YES; /*use the first row as variable name*/
+RUN; /*you can not read it if the excel is open*/

@@ -8,7 +8,7 @@ h2o.init(
 h2o.removeAll() # Clean slate - just in case the cluster was already running
 
 #set location
-setwd("c:/Users/Eli/Desktop/Data Orbital Testing Files/Project4") 
+setwd("c:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4") 
 
 #read data
 df <- h2o.importFile(path = normalizePath("CleanedData.csv"))
@@ -98,7 +98,7 @@ h2o.auc(h2o.performance(gbm, valid = TRUE))
 #------------------------------------------------------------
 preds <- h2o.predict(gbm, newvalid)
 head(preds)
-h2o.exportFile(preds, "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/H2OScored.csv", force=TRUE)
+h2o.exportFile(preds, "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/H2OScored.csv", force=TRUE)
 
 
 gbm@model$validation_metrics@metrics$max_criteria_and_metric_scores

@@ -1,5 +1,5 @@
 /*read data*/
-PROC IMPORT OUT= WORK.state DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/OriginalData.csv" 
+PROC IMPORT OUT= WORK.state DATAFILE= "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/OriginalData.csv" 
             DBMS=csv REPLACE;
      GETNAMES=YES; /*use the first row as variable name*/
 RUN; /*you can not read it if the excel is open*/
@@ -59,6 +59,6 @@ proc contents data=target;
 run;
 
 
-proc export data=target outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx' dbms = xlsx replace;
+proc export data=target outfile='C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx' dbms = xlsx replace;
 run;
 

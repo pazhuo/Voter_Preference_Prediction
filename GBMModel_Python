@@ -220,7 +220,7 @@ print('Accuracy of the GBM on test set: {:.3f}'.format(model1.score(x_test, y_te
 pred=model1.predict(x_test)
 print(pred)
 print(classification_report(y_test, pred))
-pred.to_csv('C:\Users\Eli\Desktop\1.csv', sheet_name='Total Women')
+pred.to_csv('C:\Users\Azhuo\Desktop\1.csv', sheet_name='Total Women')
 
 
 #plot confusion matrix

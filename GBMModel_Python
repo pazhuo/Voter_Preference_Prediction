@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jun 21 11:30:08 2018
-@author: zoey
+@author: Azhuo
 """
 #https://www.datacareer.ch/blog/parameter-tuning-in-gradient-boosting-gbm-with-python/
 import pandas as pd
 
 #read data
-state = pd.DataFrame.from_csv("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/statewide.csv")
-state.head().to_excel("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx")
+state = pd.DataFrame.from_csv("C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/statewide.csv")
+state.head().to_excel("C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx")
 
 #check the column name
 headers = state.dtypes.index
@@ -17,7 +17,7 @@ print(headers)
 #delete unnessasary columns
 state=state.drop(state.columns[[0,1,2,3,4,7,8,9,10,18,20,21]], axis=1)
 state.head()
-state.head().to_excel("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx"
+state.head().to_excel("C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Statewide.xlsx"
           , sheet_name='2')
 
 #change column name
@@ -43,14 +43,14 @@ state.apply(lambda row: row.arpaio + row.mcsally +row.undecided + row.ward, axis
 state['total'] = state.apply(lambda row: row.arpaio + row.mcsally +row.undecided + row.ward, axis=1)
 state.head()
 
-state.to_csv("C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/newstate.csv")
+state.to_csv("C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/newstate.csv")
 
 #remove all 0
 state=state[state.summ != 0]
 
 #-----------------------------------------------
 #read excel into python
-df = pd.read_csv('C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/cleanstate.csv')
+df = pd.read_csv('C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/cleanstate.csv')
 df.head()
 
 #define x and y

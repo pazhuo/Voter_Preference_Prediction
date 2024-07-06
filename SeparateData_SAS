@@ -22,9 +22,9 @@ table y;
 run;
 
 /*export train and valide data */
-proc export data=train outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/train.xlsx' dbms = xlsx replace;
+proc export data=train outfile='C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/train.xlsx' dbms = xlsx replace;
 run;
-PROC IMPORT OUT=train DATAFILE= "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/train.xlsx" 
+PROC IMPORT OUT=train DATAFILE= "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/train.xlsx" 
             DBMS=xlsx REPLACE;
      GETNAMES=YES; /*use the first row as variable name*/
 RUN; 

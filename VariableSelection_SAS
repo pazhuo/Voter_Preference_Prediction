@@ -161,7 +161,7 @@ title1 ;
 
 /* The DATA Step creates the scoring code to assign the branches to a cluster. */
 
-filename brclus "C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/branch_clus.sas";
+filename brclus "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/branch_clus.sas";
 data _null_;
    file brclus;
    set work.clus end=last;

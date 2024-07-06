@@ -44,7 +44,8 @@ run; quit;
 title1 ;
 
 
-/*select optimal cutoff probability*/
+/*select optimal cutoff probability, our target is identify potential voters and focus on minimizing false negative. 
+raising the cutoff probability will increase specificity leads to more false negative and fewer false positive*/
 proc logistic data =train;
 	class CD(param=ref ref='1') Party(param=ref ref='Other') Age(param=ref ref='1') Gender(param=ref ref='M');
    model y(event='1')= cd party age age*gender four / outroc=rocstats;

@@ -1,5 +1,6 @@
 /*read data*/
-PROC IMPORT OUT= WORK.state DATAFILE= "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/OriginalData.csv" 
+%let sourceFilePath = "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/OriginalData.csv" 
+PROC IMPORT OUT= WORK.state DATAFILE= &sourceFilePath
             DBMS=csv REPLACE;
      GETNAMES=YES; /*use the first row as variable name*/
 RUN; /*you can not read it if the excel is open*/
@@ -22,6 +23,7 @@ set restate;
 total=arpaio+mcsally+undecide+ward;
 run;
 
+/*check first 5 rows of dataset*/
 proc print data=sumstate (obs=5);
 run;
 
@@ -30,16 +32,17 @@ proc freq data=sumstate;
 tables total;
 run;
 
-/*delete 0,2,3 in total*/
+/*delete 0,2,3 in total to gets single voted voters records*/
 data cleanstate;
 set sumstate;
 if total = 1 then output cleanstate;
 run;
 
+/*check first 5 rows of dataset*/
 proc print data=cleanstate (obs=5);
 run;
 
-/*combine arpaio, mcsally, ward, undecide as y， set mcsally*/
+/*combine arpaio, mcsally, ward, undecide as y， set mcsally as target*/
 data target;
 set cleanstate;
 drop arpaio mcsally ward undecide;
@@ -49,16 +52,18 @@ if ward = 1 then y=0;
 if undecide = 1 then y=2;
 run;
 
-/*delete y=3 undecide*/
+/*delete undecide*/
 data target;
 set target;
 if y in ("0","1") then output;
 run;
 
+/*check metadata: total rows, columns, type, length, format, etc.*/
 proc contents data=target;
 run;
 
-
-proc export data=target outfile='C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx' dbms = xlsx replace;
+/*export clean data*/
+%let targetFilePath = "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx"
+proc export data=target outfile= &targetFilePath dbms = xlsx replace;
 run;
 

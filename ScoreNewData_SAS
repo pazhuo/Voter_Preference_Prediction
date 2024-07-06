@@ -10,7 +10,8 @@ proc print data=work.scored1(obs=10);
    var p_1 cd party age gender four;
 run;
 
-proc export data=scored1 outfile='C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/scored_data.xlsx' dbms = xlsx replace;
+#modify the export location to proper name
+proc export data=scored1 outfile='C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/scored_data.xlsx' dbms = xlsx replace;
 run;
 
 

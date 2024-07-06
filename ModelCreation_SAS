@@ -15,7 +15,7 @@ run;
 /*best model*/
 %global screened;
 %let screened=CD party age;
-ods pdf file="C:/Users/Eli/Desktop/Data Orbital Testing Files/Project4/finalmodel.pdf";
+ods pdf file="C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/finalmodel.pdf";
 title1 "Logistic Regression Model for Mcsally";
 proc logistic data=work.train
    plots(only maxpoints=none)=(effect(clband x=(four))

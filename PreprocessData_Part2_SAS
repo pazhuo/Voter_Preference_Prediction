@@ -14,11 +14,11 @@ data combine_pt;
 set greenacre_age;
 if  party in ('Unaffili','Independ') then party='Independent';
 if  party in ('Green','Liberal','Libertar','Other','Reform') then party='Other';
-if  party in ('Democrat') then party='Democrat';
-if  party in ('Republic') then party='Republic';
+/*if  party in ('Democrat') then party='Democrat';*/
+/*if  party in ('Republic') then party='Republic';*/
 run;
 
-/*delete unknown gender*/
+/*delete unknown gender as records are small and no fair guess*/
 data delete_gender;
 set combine_pt;
 if gender in ('F','M') then output;
@@ -27,7 +27,7 @@ run;
 proc print data=delete_gender(obs=5);
 run;
 
-/*delete unknown or other race*/
+/*delete unknown or other race as records are small and no fair guess*/
 data delete_race;
 set delete_gender;
 if Coalesce_Race in ('Asian','Black','Hispanic','White') then output;

@@ -1,5 +1,6 @@
 /*read data*/
-PROC IMPORT OUT= target DATAFILE= "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx" 
+%let filePath = "C:/Users/Azhuo/Desktop/Data Orbital Testing Files/Project4/Mcsally.xlsx"
+PROC IMPORT OUT= target DATAFILE= &filePath
             DBMS=xlsx REPLACE;
      GETNAMES=YES; /*use the first row as variable name*/
 RUN; /*you can not read it if the excel is open*/

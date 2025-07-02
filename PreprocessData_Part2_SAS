@@ -51,35 +51,39 @@ run;
 
 
 /*------------------------------------------------------------------*/
-/*code race as 1,2,3,4*/
+/*code race with One-hot encoding with White as reference */
 data code_race;
-set cleaned_data;
-if Race = "Asian" then race=1;
-if Race = "Black" then race=2;
-if Race = "Hispanic" then race=3;
-if Race = "White" then race=4;
+    set cleaned_data;
+
+    /* No variable for race_white */
+    race_asian    = (Race = "Asian");
+    race_black    = (Race = "Black");
+    race_hispanic = (Race = "Hispanic");
 run;
 
 proc print data=code_race(obs=5);
 run;
 
-/*code party as 1,2,3,4*/
+/* One-hot encode party into dummy variables */
 data code_party;
-set code_race;
-if party = "Democrat" then party=1;
-if party = "Independ" then party=2;
-if party = "Republic" then party=3;
-if party = "Other" then party=4;
+    set code_race;
+
+    /* Create binary flags for each party */
+    party_democrat  = (party = "Democrat");
+    party_independ  = (party = "Independ");
+    party_republic  = (party = "Republic");
+    party_other     = (party = "Other");
 run;
 
 proc print data=code_party(obs=5);
 run;
 
-/*code gender*/
+/* One-hot encode gender with 'M' as the reference */
 data code_gender;
-set code_party;
-if gender='F' then gender=1;
-if gender='M' then gender=2;
+    set code_party;
+
+    gender_female = (gender = 'F');
+    /* No need for gender_male */
 run;
 
 proc print data=code_gender(obs=5);
